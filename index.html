@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>আমার গ্রাম</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .active-tab { background-color: #54baff; color: white; }
+    .highlight-card { background-color: #fffbeb; border-left: 4px solid #54baff; }
+    .text-highlight { background-color: #ffeb3b; color: #333; font-weight: bold; padding: 0 3px; border-radius: 2px; }
+    .person-card { transition: all 0.3s ease; }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+<!-- Auth Page -->
+<div id="authPage" class="min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-6">
+    <h1 class="text-3xl font-bold text-center mb-4 text-[#54baff]">আমার গ্রাম</h1>
+    <div class="flex justify-center space-x-4 mb-4">
+      <button id="loginTab" class="py-2 px-4 rounded-full active-tab">লগইন</button>
+      <button id="signupTab" class="py-2 px-4 rounded-full bg-gray-300 text-gray-700">সাইন আপ</button>
+    </div>
+    <form id="authForm" class="space-y-4">
+      <input id="mobile" type="text" placeholder="মোবাইল নম্বর" class="w-full p-2 border rounded" required>
+      <input id="password" type="password" placeholder="পাসওয়ার্ড" class="w-full p-2 border rounded" required>
+      <button id="submitBtn" class="w-full py-2 px-4 bg-[#54baff] text-white rounded">লগইন</button>
+    </form>
+    <p id="message" class="text-sm text-red-500 mt-2 text-center"></p>
+  </div>
+</div>
+
+<!-- Directory Page -->
+<div id="directoryPage" class="hidden min-h-screen relative">
+  <div id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-[#54baff] text-white transform -translate-x-full transition-transform z-20 p-4">
+    <h2 class="text-xl font-bold mb-2">মেনু</h2>
+    <p class="text-sm mb-4" id="sidebarUser"></p>
+    
+    <button id="addPersonBtn" class="mb-2 px-3 py-2 bg-white text-[#54baff] rounded w-full">নতুন ব্যক্তি যুক্ত</button>
+    
+    <button id="logoutBtn" class="px-3 py-2 bg-white text-[#54baff] rounded w-full">লগআউট</button>
+    
+    <!-- নতুন অ্যাপ ডাউনলোড বোতাম -->
+    <a href="https://drive.google.com/uc?export=download&id=1JY7Y8ZXxHvvPhM4oKl8sZpPxbQ5pfw_z" 
+       target="_blank"
+       class="mt-3 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded w-full block text-center font-medium transition-colors">
+      📱 অ্যাপ ডাউনলোড করুন
+    </a>
+  </div>
+
+  <!-- Header -->
+  <div class="flex items-center justify-between bg-[#54baff] p-4 text-white">
+    <button id="menuBtn" class="text-2xl focus:outline-none">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+    <h1 class="text-xl font-bold">আমার গ্রাম</h1>
+  </div>
+
+  <!-- Search + Filters -->
+  <div class="p-4 flex flex-col md:flex-row md:flex-wrap md:gap-4 space-y-2 md:space-y-0">
+    <input id="searchInput" type="text" placeholder="নাম, পিতা বা মোবাইল সার্চ করুন" class="flex-1 p-2 border rounded min-w-[200px]">
+    
+    <select id="areaFilter" class="p-2 border rounded min-w-[160px]">
+      <option value="">সব এলাকা/গ্রাম</option>
+    </select>
+    
+    <select id="bloodFilter" class="p-2 border rounded min-w-[140px]">
+      <option value="">রক্তের গ্রুপ</option>
+      <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+      <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+    </select>
+    
+    <select id="occupationFilter" class="p-2 border rounded min-w-[160px]">
+      <option value="">পেশা</option>
+      <option>কৃষক</option><option>ছাত্র</option><option>শিক্ষক</option>
+      <option>ব্যবসায়ী</option><option>শ্রমিক</option><option>চাকরিজীবী</option>
+      <option>অন্যান্য</option><option>অটো গাড়ি ড্রাইভার</option><option>ভ্যান চালক</option>
+      <option>ডাক্তার</option><option>মেম্বার</option><option>মাদবর</option><option>ইমাম</option><option>ব্যবসায়ী</option>
+    </select>
+  </div>
+
+  <div id="list" class="flex flex-col space-y-4 p-4"></div>
+</div>
+
+<!-- Add/Edit Person Modal -->
+<div id="addPersonModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-30">
+  <div class="bg-white rounded-lg w-full max-w-md p-6 overflow-auto max-h-[90vh]">
+    <h3 class="text-lg font-bold mb-4 text-[#54baff]">ব্যক্তি তথ্য</h3>
+    <div class="space-y-2">
+      <input id="newName" placeholder="নাম" class="w-full p-2 border rounded">
+      <input id="newFather" placeholder="পিতার নাম" class="w-full p-2 border rounded">
+      <input id="newAddress" placeholder="গ্রাম / এলাকার নাম" class="w-full p-2 border rounded">
+      <input id="newMobile" placeholder="মোবাইল নম্বর" class="w-full p-2 border rounded">
+      <input id="newMobile2" placeholder="২য় মোবাইল নম্বর" class="w-full p-2 border rounded">
+      <select id="newBlood" class="w-full p-2 border rounded">
+        <option value="">রক্তের গ্রুপ</option>
+        <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+        <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+      </select>
+      <select id="newOccupation" class="w-full p-2 border rounded">
+        <option value="">পেশা</option>
+        <option>কৃষক</option><option>ছাত্র</option><option>শিক্ষক</option>
+        <option>ব্যবসায়ী</option><option>শ্রমিক</option><option>চাকরিজীবী</option>
+        <option>অন্যান্য</option><option>অটো গাড়ি ড্রাইভার</option><option>ভ্যান চালক</option>
+        <option>ডাক্তার</option><option>মেম্বার</option><option>মাদবর</option><option>ইমাম</option><option>ব্যবসায়ী</option>
+      </select>
+    </div>
+    <div class="mt-4 flex justify-end space-x-2">
+      <button id="cancelAdd" class="px-3 py-1 border rounded">বাতিল</button>
+      <button id="saveAdd" class="px-3 py-1 bg-[#54baff] text-white rounded">সংরক্ষণ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const webAppURL = "https://script.google.com/macros/s/AKfycbynXW5r2Q0ZzoWkyXn_A2iPiCRiUQ9HUx1AKzbCl3X-zNzYl7zUJkQXi4WA4E6BrcOt/exec"; // ← এখানে আপনার আসল Google Apps Script Web App URL বসান
+
+const currentUserKey = 'gm_current_user';
+let mode = 'login', editingRowNum = null, allItemsCache = [], filtered = [];
+
+// DOM Elements
+const authPage = document.getElementById('authPage');
+const directoryPage = document.getElementById('directoryPage');
+const listDiv = document.getElementById('list');
+const sidebar = document.getElementById('sidebar');
+const addPersonModal = document.getElementById('addPersonModal');
+const searchInput = document.getElementById('searchInput');
+const areaFilter = document.getElementById('areaFilter');
+const bloodFilter = document.getElementById('bloodFilter');
+const occupationFilter = document.getElementById('occupationFilter');
+
+// Highlight search text
+function highlightText(text, query) {
+  if (!query || !text) return text;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escaped})`, 'gi');
+  return text.replace(regex, '<span class="text-highlight">$1</span>');
+}
+
+// Load dynamic area options
+function loadAreaOptions() {
+  const areas = [...new Set(allItemsCache.map(item => (item.Address || '').trim()).filter(a => a))];
+  areas.sort((a, b) => a.localeCompare(b, 'bn'));
+  areaFilter.innerHTML = '<option value="">সব এলাকা/গ্রাম</option>';
+  areas.forEach(area => {
+    const opt = document.createElement('option');
+    opt.value = area;
+    opt.textContent = area;
+    areaFilter.appendChild(opt);
+  });
+}
+
+// Apply filters and render list
+function applyFiltersAndRender() {
+  const query = searchInput.value.trim().toLowerCase();
+  const area = areaFilter.value;
+  const blood = bloodFilter.value;
+  const occupation = occupationFilter.value;
+  const role = localStorage.getItem('role');
+
+  filtered = allItemsCache.filter(it => {
+    const name     = (it.Name     || '').toString().toLowerCase();
+    const father   = (it.Father   || '').toString().toLowerCase();
+    const mobile   = (it.Mobile   || '').toString().toLowerCase();
+    const mobile2  = (it.Mobile2  || '').toString().toLowerCase();
+    const address  = (it.Address  || '').trim();
+
+    const matchSearch    = !query || name.includes(query) || father.includes(query) || mobile.includes(query) || mobile2.includes(query);
+    const matchArea      = !area  || address === area;
+    const matchBlood     = !blood || it.Blood === blood;
+    const matchOccupation = !occupation || it.Occupation === occupation;
+
+    return matchSearch && matchArea && matchBlood && matchOccupation;
+  });
+
+  listDiv.innerHTML = '';
+
+  if (filtered.length === 0) {
+    listDiv.innerHTML = '<p class="text-center text-gray-500 py-8">কোনো তথ্য পাওয়া যায়নি।</p>';
+    return;
+  }
+
+  filtered.forEach(it => {
+    const card = document.createElement('div');
+    card.className = 'person-card flex flex-col md:flex-row bg-white rounded-lg shadow p-4 space-y-2 md:space-y-0 md:space-x-4';
+    card.dataset.rowNum = it.rowNum;
+    if (query) card.classList.add('highlight-card');
+
+    const nameHTML    = highlightText(it.Name    || '', query);
+    const fatherHTML  = highlightText(it.Father  || '', query);
+    const mobileHTML  = highlightText(it.Mobile  || '', query);
+    const mobile2HTML = highlightText(it.Mobile2 || '', query);
+
+    const bloodLabel = it.Blood ? `রক্তের গ্রুপঃ ${it.Blood}` : '';
+    const occAndBlood = [it.Occupation, bloodLabel].filter(Boolean).join(' | ');
+
+    const mobile1 = it.Mobile  ? `মোবাইলঃ ${mobileHTML} <a href="tel:${it.Mobile}" class="text-[#54baff] underline text-xs">ফোন করুন</a>` : '';
+    const mobile2 = it.Mobile2 ? `<br>২য় মোবাইলঃ ${mobile2HTML} <a href="tel:${it.Mobile2}" class="text-[#54baff] underline text-xs">ফোন করুন</a>` : '';
+
+    card.innerHTML = `
+      <div class="flex-1 text-left">
+        <div class="font-bold text-lg">${nameHTML}</div>
+        <div class="text-sm text-gray-600">পিতাঃ ${fatherHTML}</div>
+        <div class="text-sm text-gray-600">এলাকা/গ্রামঃ ${it.Address || ''}</div>
+        <div class="text-xs text-gray-500">${occAndBlood}</div>
+        <div class="mt-1 text-xs">${mobile1}${mobile2}</div>
+        ${role === 'admin' ? `
+          <div class="mt-3 space-x-2">
+            <button class="px-3 py-1 bg-yellow-200 text-xs rounded edit-btn">সম্পাদনা</button>
+            <button class="px-3 py-1 bg-red-500 text-white text-xs rounded delete-btn">মুছে ফেলুন</button>
+          </div>
+        ` : ''}
+      </div>`;
+
+    listDiv.appendChild(card);
+  });
+}
+
+// Load data from Google Apps Script
+function loadAndRender() {
+  fetch(webAppURL + "?action=getAll")
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === "error") {
+        listDiv.innerHTML = `<p class="text-red-500 text-center py-8">এরর: ${data.message}</p>`;
+        return;
+      }
+      allItemsCache = data || [];
+      loadAreaOptions();
+      applyFiltersAndRender();
+
+      searchInput.oninput = applyFiltersAndRender;
+      areaFilter.onchange = applyFiltersAndRender;
+      bloodFilter.onchange = applyFiltersAndRender;
+      occupationFilter.onchange = applyFiltersAndRender;
+    })
+    .catch(err => {
+      console.error(err);
+      listDiv.innerHTML = '<p class="text-red-500 text-center py-8">সার্ভারের সাথে যোগাযোগ করা যাচ্ছে না।</p>';
+    });
+}
+
+// Authentication
+document.getElementById('authForm').onsubmit = e => {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'লোড হচ্ছে...';
+
+  const mobile = document.getElementById('mobile').value.trim();
+  const password = document.getElementById('password').value;
+
+  fetch(webAppURL, {
+    method: 'POST',
+    body: new URLSearchParams({ action: mode, mobile, password })
+  })
+    .then(r => r.json())
+    .then(res => {
+      if (res.status === 'success') {
+        localStorage.setItem(currentUserKey, mobile);
+        localStorage.setItem('role', res.role || 'user');
+        showDirectory();
+      } else {
+        document.getElementById('message').textContent = res.message || 'ভুল হয়েছে';
+      }
+    })
+    .catch(() => {
+      alert('সার্ভারের সাথে যোগাযোগ করা যাচ্ছে না');
+    })
+    .finally(() => {
+      btn.disabled = false;
+      btn.textContent = mode === 'login' ? 'লগইন' : 'রেজিস্ট্রেশন';
+    });
+};
+
+function showDirectory() {
+  authPage.classList.add('hidden');
+  directoryPage.classList.remove('hidden');
+  document.getElementById('sidebarUser').textContent = `${localStorage.getItem(currentUserKey)} - ${localStorage.getItem('role')}`;
+  loadAndRender();
+}
+
+// Sidebar toggle
+document.getElementById('menuBtn').onclick = () => {
+  sidebar.classList.toggle('-translate-x-full');
+};
+
+document.getElementById('directoryPage').onclick = e => {
+  if (!sidebar.contains(e.target) && !e.target.closest('#menuBtn')) {
+    sidebar.classList.add('-translate-x-full');
+  }
+};
+
+document.getElementById('logoutBtn').onclick = () => {
+  localStorage.clear();
+  directoryPage.classList.add('hidden');
+  authPage.classList.remove('hidden');
+};
+
+// Add / Edit modal
+document.getElementById('addPersonBtn').onclick = () => {
+  editingRowNum = null;
+  addPersonModal.querySelectorAll('input, select').forEach(el => el.value = '');
+  addPersonModal.classList.remove('hidden');
+  sidebar.classList.add('-translate-x-full');
+};
+
+document.getElementById('cancelAdd').onclick = () => addPersonModal.classList.add('hidden');
+
+document.getElementById('saveAdd').onclick = () => {
+  const name = document.getElementById('newName').value.trim();
+  if (!name) return alert('নাম দিন');
+
+  const params = new URLSearchParams({
+    action: "addPerson",
+    name,
+    father: document.getElementById('newFather').value.trim(),
+    address: document.getElementById('newAddress').value.trim(),
+    mobile: document.getElementById('newMobile').value.trim(),
+    mobile2: document.getElementById('newMobile2').value.trim(),
+    blood: document.getElementById('newBlood').value,
+    occupation: document.getElementById('newOccupation').value
+  });
+
+  if (editingRowNum) params.append('rowNum', editingRowNum);
+
+  const btn = document.getElementById('saveAdd');
+  btn.disabled = true;
+  btn.textContent = "সংরক্ষণ হচ্ছে...";
+
+  fetch(webAppURL, { method: "POST", body: params })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success || res.status === 'success') {
+        addPersonModal.classList.add('hidden');
+        loadAndRender();
+      } else {
+        alert("সংরক্ষণ ব্যর্থ: " + (res.message || 'অজানা সমস্যা'));
+      }
+    })
+    .catch(() => alert('সার্ভারে সমস্যা'))
+    .finally(() => {
+      btn.disabled = false;
+      btn.textContent = "সংরক্ষণ";
+    });
+};
+
+// Edit & Delete handlers
+listDiv.addEventListener('click', e => {
+  const card = e.target.closest('.person-card');
+  if (!card) return;
+  const rowNum = card.dataset.rowNum;
+
+  if (e.target.classList.contains('edit-btn')) {
+    const item = allItemsCache.find(i => i.rowNum == rowNum);
+    if (item) {
+      editingRowNum = item.rowNum;
+      document.getElementById('newName').value       = item.Name      || '';
+      document.getElementById('newFather').value     = item.Father    || '';
+      document.getElementById('newAddress').value    = item.Address   || '';
+      document.getElementById('newMobile').value     = item.Mobile    || '';
+      document.getElementById('newMobile2').value    = item.Mobile2   || '';
+      document.getElementById('newBlood').value      = item.Blood     || '';
+      document.getElementById('newOccupation').value = item.Occupation|| '';
+      addPersonModal.classList.remove('hidden');
+    }
+  }
+
+  if (e.target.classList.contains('delete-btn')) {
+    const item = allItemsCache.find(i => i.rowNum == rowNum);
+    if (item && confirm(`"${item.Name}" কে মুছে ফেলবেন?`)) {
+      fetch(webAppURL, {
+        method: 'POST',
+        body: new URLSearchParams({ action: 'deletePerson', rowNum })
+      })
+        .then(r => r.json())
+        .then(res => {
+          if (res.status === 'success') loadAndRender();
+          else alert('মুছে ফেলা যায়নি');
+        })
+        .catch(() => alert('মুছে ফেলা যায়নি'));
+    }
+  }
+});
+
+// Login/Signup tabs
+document.getElementById('loginTab').onclick = () => { mode = 'login'; updateTabs(); };
+document.getElementById('signupTab').onclick = () => { mode = 'signup'; updateTabs(); };
+
+function updateTabs() {
+  document.getElementById('loginTab').className  = mode === 'login'  ? 'py-2 px-4 rounded-full active-tab' : 'py-2 px-4 rounded-full bg-gray-300 text-gray-700';
+  document.getElementById('signupTab').className = mode === 'signup' ? 'py-2 px-4 rounded-full active-tab' : 'py-2 px-4 rounded-full bg-gray-300 text-gray-700';
+  document.getElementById('submitBtn').textContent = mode === 'login' ? 'লগইন' : 'রেজিস্ট্রেশন';
+  document.getElementById('message').textContent = '';
+}
+
+// Auto-login if already logged in
+if (localStorage.getItem(currentUserKey)) {
+  showDirectory();
+}
+</script>
+</body>
+</html>
