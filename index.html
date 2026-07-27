@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>আমার গ্রাম</title>
+  <title>🩸 সঠিক সেবা ব্লাড ব্যাংক</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .active-tab { background-color: #54baff; color: white; }
@@ -15,14 +15,22 @@
 <body class="bg-gray-100 font-sans">
 
 <!-- Auth Page -->
+
 <div id="authPage" class="min-h-screen flex items-center justify-center">
   <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-6">
-    <h1 class="text-3xl font-bold text-center mb-4 text-[#54baff]">আমার গ্রাম</h1>
+    <h1 class="text-3xl font-bold text-center mb-4 text-[#54baff]">🩸 সঠিক সেবা ব্লাড ব্যাংক</h1>
     <div class="flex justify-center space-x-4 mb-4">
       <button id="loginTab" class="py-2 px-4 rounded-full active-tab">লগইন</button>
       <button id="signupTab" class="py-2 px-4 rounded-full bg-gray-300 text-gray-700">সাইন আপ</button>
     </div>
-    <form id="authForm" class="space-y-4">
+   <div class="mb-4">
+ <marquee behavior="scroll" direction="left" scrollamount="6"
+  class="bg-yellow-100 text-red-600 font-semibold py-2 px-3 rounded-lg">
+  🩸 নতুন ব্যবহারকারী হলে আগে <b>সাইন আপ</b> করুন, তারপর <b>লগইন</b> করুন। 
+  ❓ সহায়তার প্রয়োজন হলে কল করুন অথবা WhatsApp করুন: <b>01754108606</b> ।
+</marquee>
+</div> 
+<form id="authForm" class="space-y-4">
       <input id="mobile" type="text" placeholder="মোবাইল নম্বর" class="w-full p-2 border rounded" required>
       <input id="password" type="password" placeholder="পাসওয়ার্ড" class="w-full p-2 border rounded" required>
       <button id="submitBtn" class="w-full py-2 px-4 bg-[#54baff] text-white rounded">লগইন</button>
@@ -47,6 +55,14 @@
        class="mt-3 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded w-full block text-center font-medium transition-colors">
       📱 অ্যাপ ডাউনলোড করুন
     </a>
+</a>
+    
+    <!-- WhatsApp যোগাযোগ বোতাম -->
+    <a href="https://wa.me/8801754108606" 
+       target="_blank"
+       class="mt-3 px-3 py-2 bg-[#25D366] hover:bg-[#1da851] text-white rounded w-full block text-center font-medium transition-colors">
+      💬 WhatsApp এ যোগাযোগ
+    </a>
   </div>
 
   <!-- Header -->
@@ -56,7 +72,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
       </svg>
     </button>
-    <h1 class="text-xl font-bold">আমার গ্রাম</h1>
+    <h1 class="text-xl font-bold">🩸 সঠিক সেবা ব্লাড ব্যাংক</h1>
   </div>
 
   <!-- Search + Filters -->
@@ -160,46 +176,41 @@ function applyFiltersAndRender() {
   const blood = bloodFilter.value;
   const occupation = occupationFilter.value;
   const role = localStorage.getItem('role');
-
   filtered = allItemsCache.filter(it => {
-    const name     = (it.Name     || '').toString().toLowerCase();
-    const father   = (it.Father   || '').toString().toLowerCase();
-    const mobile   = (it.Mobile   || '').toString().toLowerCase();
-    const mobile2  = (it.Mobile2  || '').toString().toLowerCase();
-    const address  = (it.Address  || '').trim();
-
-    const matchSearch    = !query || name.includes(query) || father.includes(query) || mobile.includes(query) || mobile2.includes(query);
-    const matchArea      = !area  || address === area;
-    const matchBlood     = !blood || it.Blood === blood;
+    const name = (it.Name || '').toString().toLowerCase();
+    const father = (it.Father || '').toString().toLowerCase();
+    const mobile = (it.Mobile || '').toString().toLowerCase();
+    const mobile2 = (it.Mobile2 || '').toString().toLowerCase();
+    const address = (it.Address || '').trim();
+    const matchSearch = !query || name.includes(query) || father.includes(query) || mobile.includes(query) || mobile2.includes(query);
+    const matchArea = !area || address === area;
+    const matchBlood = !blood || it.Blood === blood;
     const matchOccupation = !occupation || it.Occupation === occupation;
-
     return matchSearch && matchArea && matchBlood && matchOccupation;
   });
-
   listDiv.innerHTML = '';
-
   if (filtered.length === 0) {
     listDiv.innerHTML = '<p class="text-center text-gray-500 py-8">কোনো তথ্য পাওয়া যায়নি।</p>';
     return;
   }
-
   filtered.forEach(it => {
     const card = document.createElement('div');
     card.className = 'person-card flex flex-col md:flex-row bg-white rounded-lg shadow p-4 space-y-2 md:space-y-0 md:space-x-4';
     card.dataset.rowNum = it.rowNum;
     if (query) card.classList.add('highlight-card');
-
-    const nameHTML    = highlightText(it.Name    || '', query);
-    const fatherHTML  = highlightText(it.Father  || '', query);
-    const mobileHTML  = highlightText(it.Mobile  || '', query);
+    
+    const nameHTML = highlightText(it.Name || '', query);
+    const fatherHTML = highlightText(it.Father || '', query);
+    const mobileHTML = highlightText(it.Mobile || '', query);
     const mobile2HTML = highlightText(it.Mobile2 || '', query);
-
-    const bloodLabel = it.Blood ? `রক্তের গ্রুপঃ ${it.Blood}` : '';
+    
+    // ← এখানে পরিবর্তন করা হয়েছে (রক্তের গ্রুপ লাল)
+    const bloodLabel = it.Blood ? `রক্তের গ্রুপঃ <span class="text-red-600 font-bold">${it.Blood}</span>` : '';
     const occAndBlood = [it.Occupation, bloodLabel].filter(Boolean).join(' | ');
-
-    const mobile1 = it.Mobile  ? `মোবাইলঃ ${mobileHTML} <a href="tel:${it.Mobile}" class="text-[#54baff] underline text-xs">ফোন করুন</a>` : '';
+    
+    const mobile1 = it.Mobile ? `মোবাইলঃ ${mobileHTML} <a href="tel:${it.Mobile}" class="text-[#54baff] underline text-xs">ফোন করুন</a>` : '';
     const mobile2 = it.Mobile2 ? `<br>২য় মোবাইলঃ ${mobile2HTML} <a href="tel:${it.Mobile2}" class="text-[#54baff] underline text-xs">ফোন করুন</a>` : '';
-
+    
     card.innerHTML = `
       <div class="flex-1 text-left">
         <div class="font-bold text-lg">${nameHTML}</div>
@@ -214,7 +225,6 @@ function applyFiltersAndRender() {
           </div>
         ` : ''}
       </div>`;
-
     listDiv.appendChild(card);
   });
 }
